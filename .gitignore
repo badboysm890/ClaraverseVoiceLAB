@@ -43,6 +43,6 @@ backend/tts_history/
 backend/tmp*.mp4
 backend/*.db
 
-.bmad-core
-.github
-.vscode
+# Project-specific directories
+.bmad-core/
+.github/
