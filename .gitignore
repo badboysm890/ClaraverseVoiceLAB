@@ -42,3 +42,7 @@ backend/vc_history/
 backend/tts_history/
 backend/tmp*.mp4
 backend/*.db
+
+.bmad-core
+.github
+.vscode
