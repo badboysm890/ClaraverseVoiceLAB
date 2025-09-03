@@ -1,0 +1,68 @@
+services:
+  clara-voice-lab:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: clara-voice-lab
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"  # API port
+      - "${FRONTEND_PORT:-3000}:3000"  # Frontend port
+    volumes:
+      - clara_voice_data:/app/data  # Docker volume for data persistence
+      - clara_voice_models:/app/models  # Docker volume for models
+      - ./backend:/app/backend  # Development: live reload backend
+      - ./src:/app/src  # Development: live reload frontend
+    environment:
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - BACKEND_PORT=${BACKEND_PORT:-8000}
+      - FRONTEND_PORT=${FRONTEND_PORT:-3000}
+      - WEB_PORT=${WEB_PORT:-8080}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/database/users.db}
+      - SECRET_KEY=${SECRET_KEY:-clara-voice-lab-4930-24675}
+      - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES:-30}
+      - AUTO_UNLOAD_MODELS_MINUTES=${AUTO_UNLOAD_MODELS_MINUTES:-5}
+      - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB:-500}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  nginx:
+    image: nginx:alpine
+    container_name: clara-voice-lab-proxy
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      clara-voice-lab:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  clara_voice_data:
+    driver: local
+  clara_voice_models:
+    driver: local
+
+networks:
+  default:
+    name: clara-voice-lab-network

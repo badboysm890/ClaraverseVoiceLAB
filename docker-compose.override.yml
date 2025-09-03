@@ -1,0 +1,23 @@
+# Docker Compose override for development with live reload
+services:
+  clara-voice-lab:
+    volumes:
+      # Live reload for development
+      - ./backend:/app/backend:ro
+      - ./src:/app/src:ro
+      - ./public:/app/public:ro
+      - ./package.json:/app/package.json:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tailwind.config.js:/app/tailwind.config.js:ro
+      - ./postcss.config.js:/app/postcss.config.js:ro
+    environment:
+      - NODE_ENV=development
+      - PYTHONPATH=/app/backend
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:8080
+    command: ["/start.sh"]
+    
+  nginx:
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80

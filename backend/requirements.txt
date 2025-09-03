@@ -1,0 +1,22 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+sqlalchemy==2.0.35
+bcrypt==4.1.2
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
+
+# ChatterBox AI dependencies
+# Note: For CUDA support, install PyTorch manually first:
+# pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu118
+# Then install the rest with: pip install -r requirements.txt
+
+# CPU-only version (default):
+torch>=2.0.0
+torchaudio>=2.0.0
+numpy>=1.21.0
+librosa>=0.10.0
+sounddevice>=0.4.0
+moviepy>=1.0.3
+opencv-python>=4.8.0
+soundfile>=0.12.1
+audioread>=3.0.0

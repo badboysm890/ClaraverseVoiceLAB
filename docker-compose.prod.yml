@@ -1,0 +1,84 @@
+services:
+  clara-voice-lab:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: clara-voice-lab-prod
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - clara_voice_data_prod:/app/data
+      - clara_voice_models_prod:/app/models
+      # No live reload volumes in production
+    environment:
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - BACKEND_PORT=${BACKEND_PORT:-8000}
+      - FRONTEND_PORT=${FRONTEND_PORT:-3000}
+      - WEB_PORT=${WEB_PORT:-80}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/database/users.db}
+      - SECRET_KEY=${SECRET_KEY}  # Must be set in production
+      - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES:-60}
+      - AUTO_UNLOAD_MODELS_MINUTES=${AUTO_UNLOAD_MODELS_MINUTES:-10}
+      - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB:-1000}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://your-domain.com}
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:alpine
+    container_name: clara-voice-lab-proxy-prod
+    ports:
+      - "${WEB_PORT:-80}:80"
+      - "443:443"  # HTTPS
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      # Add SSL certificates for production
+      # - ./ssl/cert.pem:/etc/ssl/certs/cert.pem:ro
+      # - ./ssl/key.pem:/etc/ssl/private/key.pem:ro
+    depends_on:
+      clara-voice-lab:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  clara_voice_data_prod:
+    driver: local
+  clara_voice_models_prod:
+    driver: local
+
+networks:
+  default:
+    name: clara-voice-lab-prod-network

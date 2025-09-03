@@ -1,0 +1,54 @@
+# Node modules and build files
+node_modules/
+npm-debug.log*
+dist/
+
+# Tauri build artifacts
+src-tauri/target/
+src-tauri/Cargo.lock
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Data directories
+data/
+models/
+backend/voice_samples/
+backend/tts_history/
+backend/vc_history/
+backend/users.db
+backend/*.db
+
+# Temporary files
+*.tmp
+*.temp
+backend/tmp*
