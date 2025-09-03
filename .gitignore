@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Audio/Video files
+*.wav
+*.mp3
+*.mp4
+*.m4a
+*.flac
+*.aac
+*.ogg
+*.webm
+*.avi
+*.mov
+*.wmv
+
+# Voice samples and processing data
+backend/voice_samples/
+backend/vc_history/
+backend/tts_history/
+backend/tmp*.mp4
+backend/*.db
